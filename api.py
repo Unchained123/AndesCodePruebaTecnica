@@ -64,11 +64,34 @@ class profesional(Resource):
 	def get(self, id):
 		profesional= ProfesionalModel.query.filter_by(id=id).first()
 		if not profesional:
+			abort(404, "Profesional no encontrado")
+		return profesional
+	
+	@marshal_with(profesionalFields)
+	def patch(self, id):
+		args = profesional_args.parse_args()
+		profesional= ProfesionalModel.query.filter_by(id=id).first()
+		if not profesional:
 			abort(404)
+		profesional.nombre=args["nombre"]
+		profesional.ubicacion=args["ubicacion"]
+		profesional.descripcion=args["descripcion"]
+		profesional.rubro=args["rubro"]
+		db.session.commit()
 		return profesional
 
+	@marshal_with(profesionalFields)
+	def delete(self, id):
+		profesional= ProfesionalModel.query.filter_by(id=id).first()
+		if not profesional:
+			abort(404, "Profesional no encontrado")
+		db.session.delete(profesional)
+		db.session.commit()
+		profesionales=ProfesionalModel.query.all()
+		return profesionales, 204
+	
 api.add_resource(profesionales, '/api/profesionales')
-api.add_resource(profesional, '/api/profesionals/<int:id>')
+api.add_resource(profesional, '/api/profesionales/<int:id>')
 
 @app.route('/')
 def inicio():
